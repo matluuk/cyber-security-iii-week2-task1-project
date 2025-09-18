@@ -11,10 +11,6 @@ namespace MessagingProtocol {
 static const uint16_t MAGIC_NUMBER = 0xCAFE; // Identifier for our protocol
 static const uint8_t PROTOCOL_VERSION = 1;
 
-// Limits to prevent excessive memory allocation
-static const size_t MAX_SERIALIZED_SIZE = 100 * 1024 * 1024; // 100MB limit
-static const uint16_t MAX_TAG_COUNT = 1000; // Reasonable tag limit
-
 // Message types - explicit values for wire format stability
 enum MessageType : uint8_t {
     CHAT_MESSAGE = 1,   // Text messages between users

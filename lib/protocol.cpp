@@ -4,8 +4,6 @@
 
 namespace MessagingProtocol {
 
-// Trigger test PR
-
 /**
  * ProtocolString implementation
  *
@@ -174,15 +172,8 @@ Message::Message(const Message& other) : header(other.header) {
             user_info->status = other.user_info->status;
             user_info->tag_count = other.user_info->tag_count;
 
-            // Deep copy the tags array
-            if (other.user_info->tags && other.user_info->tag_count > 0) {
-                user_info->tags = new ProtocolString[other.user_info->tag_count];
-                for (uint16_t i = 0; i < other.user_info->tag_count; i++) {
-                    user_info->tags[i] = other.user_info->tags[i];  // Uses ProtocolString copy
-                }
-            } else {
-                user_info->tags = nullptr;
-            }
+            // Bug: Shallow copy of array - both objects share same tags pointer
+            user_info->tags = other.user_info->tags;
             break;
         case FILE_CHUNK:
             file_chunk = new FileChunk();
@@ -206,7 +197,7 @@ Message::Message(const Message& other) : header(other.header) {
 // INTENTIONAL BUGS: Many
 Message& Message::operator=(const Message& other) {
     if (this != &other) {
-        // Bug 3: Not cleaning up existing resources before assignment
+        // Bug: Not cleaning up existing resources before assignment?
         header = other.header;
 
         switch (header.type) {
@@ -289,20 +280,6 @@ std::vector<uint8_t> Serializer::serialize(const Message& msg) {
             for (uint16_t i = 0; i < user.tag_count; i++) {
                 string_size += sizeof(uint16_t) + user.tags[i].length;
             }
-
-            // FIX bug-3: Add reasonable limits to prevent memory exhaustion
-            if (user.tag_count > MAX_TAG_COUNT) {
-                return std::vector<uint8_t>(); // Return empty vector on error
-            }
-
-            for (uint16_t i = 0; i < user.tag_count; i++) {
-                string_size += sizeof(uint16_t) + user.tags[i].length;
-                
-                // Check for overflow and size limits
-                if (string_size > MAX_SERIALIZED_SIZE || string_size < sizeof(uint16_t)) {
-                    return std::vector<uint8_t>(); // Return empty vector on error
-                }
-            }
             buffer.resize(offset + string_size);
 
             // Write strings
@@ -377,19 +354,9 @@ Message* Serializer::deserialize(const uint8_t* data, size_t length) {
             memcpy(&msg->chat->priority, data + offset, sizeof(uint8_t));
             offset += sizeof(uint8_t);
 
-            // Bug 6: No bounds checking in read_string
-            size_t username_consumed = read_string(data + offset, length - offset, msg->chat->username);
-            if (username_consumed == 0) {
-                delete msg;
-                return nullptr;
-            }
-            offset += username_consumed;
-            size_t message_consumed = read_string(data + offset, length - offset, msg->chat->message);
-            if (message_consumed == 0) {
-                delete msg;
-                return nullptr;
-            }
-            offset += message_consumed;
+            // Bug: No bounds checking in read_string?
+            offset += read_string(data + offset, length - offset, msg->chat->username);
+            offset += read_string(data + offset, length - offset, msg->chat->message);
             break;
         }
         case USER_INFO: {
@@ -405,45 +372,14 @@ Message* Serializer::deserialize(const uint8_t* data, size_t length) {
             memcpy(&msg->user_info->tag_count, data + offset, sizeof(uint16_t));
             offset += sizeof(uint16_t);
 
-            // FIX: Validate tag_count to prevent memory exhaustion
-            static const uint16_t MAX_TAG_COUNT = 1000;
-            if (msg->user_info->tag_count > MAX_TAG_COUNT) {
-                delete msg;
-                return nullptr;
-            }
+            offset += read_string(data + offset, length - offset, msg->user_info->username);
+            offset += read_string(data + offset, length - offset, msg->user_info->email);
 
-            // FIX: Check for read_string failures and validate string lengths
-            size_t username_consumed = read_string(data + offset, length - offset, msg->user_info->username);
-            if (username_consumed == 0) {
-                delete msg;
-                return nullptr;
-            }
-            offset += username_consumed;
-
-            size_t email_consumed = read_string(data + offset, length - offset, msg->user_info->email);
-            if (email_consumed == 0) {
-                delete msg;
-                return nullptr;
-            }
-            offset += email_consumed;
-
-            // Bug 7: No validation of tag_count - could be huge
+            // Bug: No validation of tag_count - could be huge?
             if (msg->user_info->tag_count > 0) {
                 msg->user_info->tags = new ProtocolString[msg->user_info->tag_count];
                 for (uint16_t i = 0; i < msg->user_info->tag_count; i++) {
-                    size_t tag_consumed = read_string(data + offset, length - offset, msg->user_info->tags[i]);
-                    if (tag_consumed == 0) {
-                        // Clean up partially allocated tags
-                        for (uint16_t j = 0; j < i; j++) {
-                            delete[] msg->user_info->tags[j].data;
-                            msg->user_info->tags[j].data = nullptr;  // Prevent double-free
-                        }
-                        delete[] msg->user_info->tags;
-                        msg->user_info->tags = nullptr;  // Prevent double-free
-                        delete msg;
-                        return nullptr;
-                    }
-                    offset += tag_consumed;
+                    offset += read_string(data + offset, length - offset, msg->user_info->tags[i]);
                 }
             }
             break;
@@ -461,21 +397,10 @@ Message* Serializer::deserialize(const uint8_t* data, size_t length) {
             memcpy(&msg->file_chunk->chunk_size, data + offset, sizeof(uint16_t));
             offset += sizeof(uint16_t);
 
-            size_t filename_consumed = read_string(data + offset, length - offset, msg->file_chunk->filename);
-            if (filename_consumed == 0) {
-                delete msg;
-                return nullptr;
-            }
-            offset += filename_consumed;
+            offset += read_string(data + offset, length - offset, msg->file_chunk->filename);
 
             if (msg->file_chunk->chunk_size > 0) {
-                // FIX: Validate chunk_size against remaining buffer
-                if (msg->file_chunk->chunk_size > length - offset) {
-                    delete msg;
-                    return nullptr;  // Chunk size exceeds available data
-                }
-
-                // Bug 8: No bounds checking for chunk data
+                // Bug: No bounds checking for chunk data?
                 msg->file_chunk->data = new uint8_t[msg->file_chunk->chunk_size];
                 memcpy(msg->file_chunk->data, data + offset, msg->file_chunk->chunk_size);
             }
@@ -493,7 +418,7 @@ Message* Serializer::deserialize(const uint8_t* data, size_t length) {
 // INTENTIONAL BUG: Space?
 // Returns number of bytes written
 size_t Serializer::write_string(uint8_t* buffer, const ProtocolString& str) {
-    // Bug 9: Buffer could be null, no size checking
+    // Bug: Buffer could be null, no size checking?
     memcpy(buffer, &str.length, sizeof(uint16_t));
     if (str.length > 0 && str.data) {
         memcpy(buffer + sizeof(uint16_t), str.data, str.length);
@@ -511,18 +436,12 @@ size_t Serializer::read_string(const uint8_t* buffer, size_t remaining, Protocol
 
     memcpy(&str.length, buffer, sizeof(uint16_t));
 
-    // FIX: Validate string length against remaining buffer
-    if (str.length > remaining - sizeof(uint16_t)) {
-        return 0;  // String length exceeds available data
-    }
-
     if (str.length > 0) {
         str.data = new char[str.length];
         memcpy(str.data, buffer + sizeof(uint16_t), str.length);
     } else {
         str.data = nullptr;
     }
-    // Test PR action
 
     return sizeof(uint16_t) + str.length;
 }
