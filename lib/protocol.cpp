@@ -3,6 +3,7 @@
 #include <cstdlib>
 
 namespace MessagingProtocol {
+// Test commit
 
 /**
  * ProtocolString implementation
