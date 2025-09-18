@@ -4,6 +4,8 @@
 
 namespace MessagingProtocol {
 
+// Trigger test PR
+
 /**
  * ProtocolString implementation
  *
