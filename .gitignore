@@ -1,0 +1,10 @@
+build/
+build-*/
+slow-unit-*
+crash-*
+debug_*
+leak-*
+oom-*
+fuzz_deserialize
+fuzz_roundtrip
+corpus/*

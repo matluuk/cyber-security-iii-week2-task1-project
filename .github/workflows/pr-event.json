@@ -1,0 +1,28 @@
+{
+  "pull_request": {
+    "number": 1,
+    "head": {
+      "ref": "feature-branch",
+      "sha": "3236459beddbe0c8278f3e33dbb6952f05796db3"
+    },
+    "base": {
+      "ref": "main",
+      "sha": "main"
+    },
+    "changed_files": [
+      "Week2/project/lib/protocol.cpp",
+      "Week2/project/fuzzing/fuzz_deserialize.cpp"
+    ]
+  },
+  "action": "opened",
+  "repository": {
+    "name": "software-and-hardware-security-submissions-2025-matluuk",
+    "full_name": "SoftwareHardwareSecurity-2025/software-and-hardware-security-submissions-2025-matluuk",
+    "owner": {
+      "login": "SoftwareHardwareSecurity-2025"
+    }
+  },
+  "sender": {
+    "login": "matluuk"
+  }
+}
