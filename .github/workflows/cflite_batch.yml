@@ -32,6 +32,6 @@ jobs:
         output-sarif: true
         # Optional but recommended: For storing certain artifacts from fuzzing.
         # See later section on "Git repo for storage".
-        storage-repo: https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/OWNER/STORAGE-REPO-NAME.git
+        storage-repo: https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/matluuk/cyber-security-iii-week2-task1-project-corpus.git
         # storage-repo-branch: main   # Optional. Defaults to "main"
         # storage-repo-branch-coverage: gh-pages  # Optional. Defaults to "gh-pages".
