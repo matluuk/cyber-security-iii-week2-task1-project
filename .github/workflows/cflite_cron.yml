@@ -1,7 +1,7 @@
 name: ClusterFuzzLite cron tasks
 on:
   schedule:
-    - cron: '0 0 * * *'  # Once a day at midnight.
+    - cron: '*/15 * * * *'  # Every 15 minutes.
 permissions: read-all
 jobs:
   Pruning:
@@ -23,8 +23,8 @@ jobs:
         # Optional but recommended.
         # See later section on "Git repo for storage".
         storage-repo: https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/matluuk/cyber-security-iii-week2-task1-project-corpus.git
-        # storage-repo-branch: main   # Optional. Defaults to "main"
-        # storage-repo-branch-coverage: gh-pages  # Optional. Defaults to "gh-pages".
+        storage-repo-branch: main   # Optional. Defaults to "main"
+        storage-repo-branch-coverage: gh-pages  # Optional. Defaults to "gh-pages".
   Coverage:
     runs-on: ubuntu-latest
     steps:
@@ -45,5 +45,5 @@ jobs:
         # Optional but recommended.
         # See later section on "Git repo for storage".
         storage-repo: https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/matluuk/cyber-security-iii-week2-task1-project-corpus.git
-        # storage-repo-branch: main   # Optional. Defaults to "main"
-        # storage-repo-branch-coverage: gh-pages  # Optional. Defaults to "gh-pages".
+        storage-repo-branch: main   # Optional. Defaults to "main"
+        storage-repo-branch-coverage: gh-pages  # Optional. Defaults to "gh-pages".
