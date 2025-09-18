@@ -30,8 +30,8 @@ jobs:
         # by the PR.
         # See later section on "Git repo for storage".
         storage-repo: https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/matluuk/cyber-security-iii-week2-task1-project-corpus.git
-        # storage-repo-branch: main   # Optional. Defaults to "main"
-        # storage-repo-branch-coverage: gh-pages  # Optional. Defaults to "gh-pages".
+        storage-repo-branch: main   # Optional. Defaults to "main"
+        storage-repo-branch-coverage: gh-pages  # Optional. Defaults to "gh-pages".
     - name: Run Fuzzers (${{ matrix.sanitizer }})
       id: run
       uses: google/clusterfuzzlite/actions/run_fuzzers@v1
@@ -45,5 +45,5 @@ jobs:
         # batch fuzzing.
         # See later section on "Git repo for storage".
         storage-repo: https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/matluuk/cyber-security-iii-week2-task1-project-corpus.git
-        # storage-repo-branch: main   # Optional. Defaults to "main"
-        # storage-repo-branch-coverage: gh-pages  # Optional. Defaults to "gh-pages".
+        storage-repo-branch: main   # Optional. Defaults to "main"
+        storage-repo-branch-coverage: gh-pages  # Optional. Defaults to "gh-pages".
