@@ -19,11 +19,6 @@ jobs:
         # - undefined
         # - memory
     steps:
-    - uses: actions/checkout@v4
-    - name: Open Web Client Directory
-      working-directory: .
-      run: |
-        pwd ; ls -la
     - name: Build Fuzzers (${{ matrix.sanitizer }})
       id: build
       uses: google/clusterfuzzlite/actions/build_fuzzers@v1
