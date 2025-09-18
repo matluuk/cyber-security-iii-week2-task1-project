@@ -2,15 +2,11 @@ name: ClusterFuzzLite PR fuzzing
 on:
   pull_request:
     paths:
-      - 'Week2/project/**'
-      - '.github/workflows/cflite_pr.yml'
+      - '**'
 permissions: read-all
 jobs:
   PR:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: Week2/project
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.sanitizer }}-${{ github.ref }}
       cancel-in-progress: true
@@ -23,6 +19,11 @@ jobs:
         # - undefined
         # - memory
     steps:
+    - uses: actions/checkout@v4
+    - name: Open Web Client Directory
+      working-directory: .
+      run: |
+        pwd ; ls -la
     - name: Build Fuzzers (${{ matrix.sanitizer }})
       id: build
       uses: google/clusterfuzzlite/actions/build_fuzzers@v1
